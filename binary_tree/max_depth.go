@@ -7,9 +7,11 @@ import (
 )
 
 type TreeNode struct {
-	Val   int
-	Left  *TreeNode
-	Right *TreeNode
+	ID     int
+	Val    int
+	Parent *TreeNode
+	Left   *TreeNode
+	Right  *TreeNode
 }
 
 // GetMaxDepth 获取node节点为根的树的最大深度
@@ -206,23 +208,78 @@ func treeMaxDistance(node *TreeNode) (int, int) {
 	return curDis, curDept
 }
 
-// 前序 后序遍历构造二叉树
-// 求最近公共祖先
-// 输入一个二叉树 和 一个整数，打印出二叉树中节点值的和等于输入整数所有的路径 todo: next
+func TreeDepth(root *TreeNode, curDept int, depthMap map[*TreeNode]int) {
+	if root == nil {
+		return
+	}
+
+	depthMap[root] = curDept
+
+	TreeDepth(root.Left, curDept+1, depthMap)
+	TreeDepth(root.Right, curDept+1, depthMap)
+	return
+}
+
+// lca 求最近公共祖先
+func lca(node1 *TreeNode, node2 *TreeNode, depthMap map[*TreeNode]int) *TreeNode {
+	node1Cur := node1
+	node2Cur := node2
+
+	for depthMap[node1Cur] > depthMap[node2Cur] {
+		node1Cur = node1Cur.Parent
+	}
+	for depthMap[node2Cur] > depthMap[node1Cur] {
+		node2Cur = node2Cur.Parent
+	}
+
+	for node1Cur != node2Cur {
+		node1Cur = node1Cur.Parent
+		node2Cur = node2Cur.Parent
+	}
+	return node1Cur
+}
+
+// 前序 后序 无栈遍历构造二叉树 根左右 左右根
+// curNode 当前要构造的节点
+// tree 待构造的树
+// 前序
+// 后序
+//func constructTree(curNode int, tree []int, preOrder []int, postOrder []int) int {
+//	if len(preOrder) == 0 {
+//		return -1
+//	}
+//
+//	curRoot := preOrder[0]
+//	// 枚举左子树的长度
+//
+//}
+
+// 输入一个二叉树 和 一个整数，打印出二叉树中节点值的和等于输入整数所有的路径
 
 func main() {
-	root := &TreeNode{
+	rootNode := &TreeNode{
+		ID:  1,
 		Val: 1,
-		Left: &TreeNode{
-			Val: -1,
-			Right: &TreeNode{
-				Val: 10,
-			},
-		},
-		Right: &TreeNode{
-			Val: 2,
-		},
 	}
+	node1 := &TreeNode{
+		ID:  2,
+		Val: -1,
+	}
+	node2 := &TreeNode{
+		ID:  3,
+		Val: 2,
+	}
+	node3 := &TreeNode{
+		ID:  4,
+		Val: 10,
+	}
+	rootNode.Left = node1
+	rootNode.Right = node2
+	node1.Right = node3
+
+	node1.Parent = rootNode
+	node2.Parent = rootNode
+	node3.Parent = node1
 
 	//maxDept := binary_tree.GetMaxDepth(root)
 	//fmt.Println(maxDept)
@@ -233,5 +290,10 @@ func main() {
 	//isBalance, depth := IsBalanceTree(root)
 	//fmt.Println(isBalance, depth)
 
-	fmt.Println(treeMaxDistance(root))
+	//fmt.Println(treeMaxDistance(root))
+
+	depthMap := make(map[*TreeNode]int, 0)
+	TreeDepth(rootNode, 0, depthMap)
+	lcaNode := lca(node1, node3, depthMap)
+	fmt.Println(lcaNode.ID)
 }
