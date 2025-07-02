@@ -177,6 +177,14 @@ func postOrderTraverse(root *TreeNode) {
 	fmt.Println(root.Val)
 }
 
+// ⼆叉树内两个节点的最⻓距离
+//func treeMaxDistance(node *TreeNode) int {
+//	if node == nil {
+//		return 0
+//	}
+//
+//}
+
 // todo: 二叉树遍历，非递归版本
 
 // 前序 后序遍历构造二叉树
