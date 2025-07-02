@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"container/list"
+	"fmt"
+	"github.com/samber/lo"
+)
 
 func isValidBoard(boardSize int, board [100][100]int) bool {
 	rowCnt := make(map[int]int, 0)
@@ -123,6 +127,106 @@ func floodFill(x, y int, visited *Map, board *Map, fillValue int) {
 
 // todo: bfs学习
 
+type WaterNode struct {
+	va int
+	vb int
+}
+
+func getNextState(cupa, cupb int, a, b int) []WaterNode {
+	return []WaterNode{
+		// 分别倒满
+		{
+			va: a,
+			vb: cupb,
+		},
+		{
+			va: cupa,
+			vb: b,
+		},
+		// 分别清空
+		{
+			va: 0,
+			vb: cupb,
+		},
+		{
+			va: cupa,
+			vb: 0,
+		},
+		// 互相倒
+		{
+			va: lo.Max([]int{0, cupa + cupb - b}),
+			vb: lo.Min([]int{cupa + cupb, b}),
+		},
+		{
+			va: lo.Min([]int{cupa + cupb, a}),
+			vb: lo.Max([]int{cupa + cupb - a, 0}),
+		},
+	}
+}
+
+func solveWater(a, b int) bool {
+	queue := list.New()
+	var visited [100][100]int
+	queue.PushBack(WaterNode{0, 0})
+	visited[0][0] = 1
+	for queue.Len() > 0 {
+		// 获取现在的最新状态
+		curNode := queue.Front()
+		queue.Remove(curNode)
+		curWaterNode := curNode.Value.(WaterNode)
+
+		if curWaterNode.va == 4 || curWaterNode.vb == 4 {
+			return true
+		}
+
+		cupa := curWaterNode.va
+		cupb := curWaterNode.vb
+
+		// a倒满
+		for _, nextState := range getNextState(cupa, cupb, a, b) {
+			if visited[nextState.va][nextState.vb] > 0 {
+				continue
+			}
+			visited[nextState.va][nextState.vb] = 1
+			queue.PushBack(nextState)
+		}
+	}
+	return false
+}
+
+func toposort(nodeList []int, graph map[int][]int) []int {
+	// 计算入度
+	degree := make(map[int]int, 0)
+	for _, vList := range graph {
+		for _, v := range vList {
+			degree[v]++
+		}
+	}
+
+	// 进行topo sort
+	topoResult := make([]int, 0)
+	queue := list.New()
+	for _, u := range nodeList {
+		if degree[u] == 0 {
+			queue.PushBack(u)
+		}
+	}
+	for queue.Len() > 0 {
+		curNode := queue.Front()
+		queue.Remove(curNode)
+		u := curNode.Value.(int)
+		topoResult = append(topoResult, u)
+
+		for _, v := range graph[u] {
+			degree[v]--
+			if degree[v] == 0 {
+				queue.PushBack(v)
+			}
+		}
+	}
+	return topoResult
+}
+
 func main() {
 	//var board [100][100]int
 	//nQueen(0, 4, board)
@@ -151,4 +255,13 @@ func main() {
 	//}
 	//fmt.Println(cnt)
 	//fmt.Println(visited)
+
+	//canSolve := solveWater(5, 3)
+	//fmt.Println(canSolve)
+
+	//graph := make(map[int][]int, 0)
+	//graph[1] = []int{2, 3}
+	//graph[2] = []int{3}
+	//topoResult := toposort([]int{1, 2, 3}, graph)
+	//fmt.Println(topoResult)
 }
