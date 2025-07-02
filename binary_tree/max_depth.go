@@ -1,4 +1,4 @@
-package binary_tree
+package main
 
 import (
 	"container/list"
@@ -177,16 +177,61 @@ func postOrderTraverse(root *TreeNode) {
 	fmt.Println(root.Val)
 }
 
-// ⼆叉树内两个节点的最⻓距离
-//func treeMaxDistance(node *TreeNode) int {
-//	if node == nil {
-//		return 0
-//	}
-//
-//}
+// 判断二叉树是否为合法的二叉查找树
+func IsValidBST(root *TreeNode, minVal, maxVal int) bool {
+	if root == nil {
+		return true
+	}
 
-// todo: 二叉树遍历，非递归版本
+	curVal := root.Val
+	leftValid := IsValidBST(root.Left, minVal, lo.Min([]int{maxVal, curVal}))
+	rightValid := IsValidBST(root.Right, lo.Max([]int{minVal, curVal}), maxVal)
+	return leftValid && rightValid && curVal >= minVal && curVal <= maxVal
+}
+
+// treeMaxDistance ⼆叉树内两个节点的最⻓距离 最大距离 & 最大深度
+func treeMaxDistance(node *TreeNode) (int, int) {
+	if node == nil {
+		return 0, 0
+	}
+
+	leftDis, leftDept := treeMaxDistance(node.Left)
+	rightDis, rightDept := treeMaxDistance(node.Right)
+
+	// 求解深度
+	curDept := lo.Max([]int{leftDept, rightDept}) + 1
+	// 求解距离
+	leftRightMax := lo.Max([]int{leftDis, rightDis})
+	curDis := lo.Max([]int{leftRightMax, leftDept + rightDept + 1})
+	return curDis, curDept
+}
 
 // 前序 后序遍历构造二叉树
 // 求最近公共祖先
 // 输入一个二叉树 和 一个整数，打印出二叉树中节点值的和等于输入整数所有的路径 todo: next
+
+func main() {
+	root := &TreeNode{
+		Val: 1,
+		Left: &TreeNode{
+			Val: -1,
+			Right: &TreeNode{
+				Val: 10,
+			},
+		},
+		Right: &TreeNode{
+			Val: 2,
+		},
+	}
+
+	//maxDept := binary_tree.GetMaxDepth(root)
+	//fmt.Println(maxDept)
+
+	//nums := binary_tree.NumsOfKLevelTreeNode(root, 2)
+	//fmt.Println(nums)
+
+	//isBalance, depth := IsBalanceTree(root)
+	//fmt.Println(isBalance, depth)
+
+	fmt.Println(treeMaxDistance(root))
+}
