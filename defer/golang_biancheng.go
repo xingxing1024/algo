@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
+	"slices"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -251,9 +253,67 @@ func panicFunc1() {
 	panic("panic")
 }
 
+func c() *int {
+	var i int
+	defer func() {
+		i++
+		fmt.Println("defer2:", i)
+	}()
+	defer func() {
+		i++
+		fmt.Println("defer1:", i)
+	}()
+	return &i
+}
+
+func printNum() {
+	var counter int32
+	go func() {
+		for {
+			curCounter := atomic.LoadInt32(&counter)
+			if curCounter > 100 {
+				return
+			}
+			if curCounter%2 == 0 {
+				fmt.Println("g1 =", curCounter)
+				atomic.CompareAndSwapInt32(&counter, curCounter, curCounter+1)
+			}
+		}
+	}()
+
+	go func() {
+		for {
+			curCounter := atomic.LoadInt32(&counter)
+			if curCounter > 100 {
+				return
+			}
+			if curCounter%2 == 1 {
+				fmt.Println("g2 =", curCounter)
+				atomic.CompareAndSwapInt32(&counter, curCounter, curCounter+1)
+			}
+		}
+	}()
+
+	time.Sleep(10 * time.Second)
+}
+
 func main() {
 
-	panicFunc1()
+	a := []int{1, 3, 2, 5, 3}
+	slices.SortFunc(a, func(a, b int) int {
+		cmpResult := a < b
+		if cmpResult {
+			return -1
+		} else {
+			return 1
+		}
+	})
+	fmt.Println(a)
+
+	//printNum()
+
+	//fmt.Println("return:", *(c()))
+	//panicFunc1()
 
 	//a, b := test(100)
 	//a()
