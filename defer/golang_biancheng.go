@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
-	"slices"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -253,18 +252,18 @@ func panicFunc1() {
 	panic("panic")
 }
 
-func c() *int {
-	var i int
-	defer func() {
-		i++
-		fmt.Println("defer2:", i)
-	}()
-	defer func() {
-		i++
-		fmt.Println("defer1:", i)
-	}()
-	return &i
-}
+//func c() *int {
+//	var i int
+//	defer func() {
+//		i++
+//		fmt.Println("defer2:", i)
+//	}()
+//	defer func() {
+//		i++
+//		fmt.Println("defer1:", i)
+//	}()
+//	return &i
+//}
 
 func printNum() {
 	var counter int32
@@ -297,18 +296,61 @@ func printNum() {
 	time.Sleep(10 * time.Second)
 }
 
+func b() (i int) {
+	defer func() {
+		i++
+		fmt.Println("defer2:", i)
+	}()
+	defer func() {
+		i++
+		fmt.Println("defer1:", i)
+	}()
+	return i
+	//或者直接写成
+	//return
+}
+
+func c() *int {
+	var i int
+	defer func() {
+		i++
+		fmt.Println("defer2:", i)
+	}()
+	defer func() {
+		i++
+		fmt.Println("defer1:", i)
+	}()
+	return &i
+}
+
+func reflectPackage() {
+	var f float64 = 3.5
+	t1 := reflect.TypeOf(f)
+	fmt.Println(t1.String())
+
+	var fp *float64 = &f
+	fmt.Println(reflect.TypeOf(fp).String())
+	fmt.Println(reflect.TypeOf(fp).Kind())
+}
+
 func main() {
 
-	a := []int{1, 3, 2, 5, 3}
-	slices.SortFunc(a, func(a, b int) int {
-		cmpResult := a < b
-		if cmpResult {
-			return -1
-		} else {
-			return 1
-		}
-	})
-	fmt.Println(a)
+	reflectPackage()
+
+	//fmt.Println("return:", *(c()))
+
+	//fmt.Println("return:", b())
+
+	//a := []int{1, 3, 2, 5, 3}
+	//slices.SortFunc(a, func(a, b int) int {
+	//	cmpResult := a < b
+	//	if cmpResult {
+	//		return -1
+	//	} else {
+	//		return 1
+	//	}
+	//})
+	//fmt.Println(a)
 
 	//printNum()
 
